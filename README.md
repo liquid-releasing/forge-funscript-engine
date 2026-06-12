@@ -10,9 +10,11 @@ device-agnostic **Feel** dials from the motion, then *forges* that one signal in
 channel set a device actually needs. Device-specificity lives in one place; everything above
 it is one honest signal.
 
-> **Status:** Phase 1 — e-stim `alpha`/`beta`/`volume` from motion, with the safety envelope.
-> Full e-stim channel set, single-axis strokers (Handy/Vacuglide), and the adjustment UI are
-> Phase 2–3. See [docs/unified-forge.spec.md](docs/unified-forge.spec.md).
+> **Status:** Phase 2 — the full e-stim channel set (alpha/beta/volume + variants,
+> frequency, pulse_*), Wildness-driven lift styles, chapter-aware generation with seam
+> stitching, and the single-axis strokers (Handy/Vacuglide), all under the safety envelope.
+> The adjustment UI and Moments authoring are Phase 3. See
+> [docs/unified-forge.spec.md](docs/unified-forge.spec.md).
 
 ## Install
 
@@ -31,17 +33,28 @@ since import names can't contain hyphens).
 ## Use it as a CLI
 
 ```bash
+# e-stim: full channel superset (default) into out/estim/
 forge-funscript-engine input.funscript -o out/ --name myclip
-# -> out/estim/myclip.alpha.funscript
-#    out/estim/myclip.beta.funscript
-#    out/estim/myclip.volume.funscript
+#   myclip.{alpha,alpha-prostate,beta,frequency,pulse_frequency,
+#           pulse_width,volume,volume-prostate,volume-stereostim}.funscript
+
+# single-axis strokers (one conditioned position track)
+forge-funscript-engine input.funscript -o out/ --device handy      # -> out/handy/myclip.funscript
+forge-funscript-engine input.funscript -o out/ --device vacuglide  # -> out/vacuglide/myclip.funscript
+
+# chapter-aware generation with seam stitching, or just the minimal a/b/v set
+forge-funscript-engine input.funscript -o out/ --chapters 4
+forge-funscript-engine input.funscript -o out/ --channels minimal
 ```
 
 | Flag | Meaning |
 |---|---|
 | `input` | input `.funscript` (1-D stroke motion) |
-| `-o, --out-dir` | output dir; channels written to `<out-dir>/estim/` (default `.`) |
+| `-o, --out-dir` | output dir (default `.`); channels go in `<out-dir>/<device>/` |
 | `--name` | output basename (default: input filename stem) |
+| `--device` | `estim` (default), `handy`, or `vacuglide` |
+| `--channels` | e-stim set: `full` (default superset) or `minimal` (alpha/beta/volume) |
+| `--chapters` | split into N equal chapters with seam stitching (e-stim) |
 | `--ramp` | Passage ramp slice `R` in `[0,1]` (default: derived from clip length) |
 
 Equivalent: `python -m forge_funscript_engine input.funscript -o out/`.
@@ -62,8 +75,14 @@ feel = derive_feel(sig)
 print(feel)   # Feel(intensity=…, pace=…, wildness=…, sharpness=…, depth=…, focus=…)
 
 # 2) Forge the e-stim channels (in-memory; pass out_dir=... to also write files)
-channels = generate_estim(actions)          # {"alpha": Funscript, "beta": …, "volume": …}
-alpha = channels["alpha"].actions           # [{"at": ms, "pos": 0..100}, …]
+channels = generate_estim(actions)              # full superset, {"alpha": Funscript, …}
+channels = generate_estim(actions, full=False)  # minimal {"alpha","beta","volume"}
+channels = generate_estim(actions, chapters=4)  # per-chapter Feel + seam stitching
+alpha = channels["alpha"].actions               # [{"at": ms, "pos": 0..100}, …]
+
+# 3) Or condition for a single-axis stroker (one position track)
+from forge_funscript_engine import generate_single_axis
+handy = generate_single_axis(actions, device="handy")["position"]
 ```
 
 Every output is hard-clamped to the restim range (`alpha/beta/volume` decode to `[0, 0.998]`,
@@ -74,7 +93,8 @@ envelope is applied as the final stage, always (see [spec §9](docs/unified-forg
 
 | Symbol | Purpose |
 |---|---|
-| `generate_estim(actions, ramp=None, name="out", out_dir=None)` | motion → `{channel: Funscript}`; writes `<out_dir>/estim/` if `out_dir` given |
+| `generate_estim(actions, ramp=None, name="out", out_dir=None, chapters=None, full=True, enable_rise_time=False)` | motion → e-stim `{channel: Funscript}`; writes `<out_dir>/estim/` if `out_dir` given |
+| `generate_single_axis(actions, device="handy", knobs=None, name="out", out_dir=None)` | motion → `{"position": Funscript}` for a stroker; writes `<out_dir>/<device>/` |
 | `analyze(actions) -> Signals` | §3 motion analysis — the constant-free base signals |
 | `derive_feel(signals, ramp=None) -> Feel` | §3.2 — the 6 Feel dials in `[0,1]` |
 | `load_funscript(path)` / `dump_funscript(fs, path)` | funscript JSON I/O |

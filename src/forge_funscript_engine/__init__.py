@@ -1,19 +1,23 @@
-"""Unified Forge engine.
+"""Forge Funscript Engine.
 
-Phase 1: parse a 1-D stroke funscript -> derive the 6-dial Feel from motion
-(spec section 3) -> synthesize the e-stim alpha/beta/volume channels via the
-real 1-D->2-D lift (section 7.2) -> safety-clamp (section 9) -> valid funscript.
+Parse a 1-D stroke funscript -> derive the 6-dial Feel from motion (spec section 3)
+-> condition into device channels -> safety-clamp (section 9) -> valid funscript.
 
-See docs/unified-forge.spec.md (section 11, Phase 1).
+  - e-stim (`generate_estim`): alpha/beta/volume + the full superset, chapter-aware
+    with seam stitching (sections 7.1-7.5).
+  - single-axis strokers (`generate_single_axis`): one position track for Handy /
+    Vacuglide (section 8).
+
+See docs/unified-forge.spec.md.
 """
 from .funscript import load_funscript, dump_funscript, Funscript
 from .analyze import analyze, Signals
 from .feel import derive_feel, Feel
-from .pipeline import generate_estim
+from .pipeline import generate_estim, generate_single_axis
 
 __all__ = [
     "load_funscript", "dump_funscript", "Funscript",
     "analyze", "Signals",
     "derive_feel", "Feel",
-    "generate_estim",
+    "generate_estim", "generate_single_axis",
 ]

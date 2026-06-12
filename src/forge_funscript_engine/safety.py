@@ -9,6 +9,14 @@ import math
 CH_MAX = 0.998        # restim alpha/beta/volume decoded ceiling (spec section 7.4)
 MAX_VOLUME = 0.7      # global volume ceiling, default <= 0.7 (spec section 9)
 RATE_CAP = 0.05       # max per-step volume delta (smooth-ramp requirement) [calibrate]
+SEAM_MAX_DELTA = 0.05  # max per-step delta allowed across a chapter seam (section 7.5)
+POS_MAX = 1.0         # single-axis position uses the full 0..100 funscript range
+
+
+def channel_ceiling(name):
+    """Decoded ceiling for a channel: volume family is current-bearing -> MAX_VOLUME;
+    everything else is capped to the restim CH_MAX (section 7.4 / 9)."""
+    return MAX_VOLUME if name.startswith("volume") else CH_MAX
 
 
 def _finite(x):
