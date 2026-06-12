@@ -80,18 +80,29 @@ artifact**. The manifest declares each stream's role and timing, so a player ope
 with everything aligned — far easier to **stream, distribute, and version** than a loose
 multi-funscript folder. The same reason container formats won over loose parts everywhere.
 
-## Near-real-time model
+## Near-real-time model — stream, don't pre-render
 
-The engine **pre-renders** during the analyze/process pass (the "run it for five minutes"
-step) and writes the device channels into the bundle. Playback then streams pre-aligned
-frames — no hard-real-time DSP required. Two playback paths (spec §10):
+Playback **streams** the device channels from a small **look-ahead buffer**: the player keeps
+a few seconds queued and the engine computes each upcoming window on demand as the playhead
+advances. No need to fully render the clip, and no loading 7+ separate files one-per-port — a
+single streaming source feeds the player.
 
-- **External players** → emit the funscript superset → recognized folder → restim/others play.
-- **ForgePlayer (native)** → read the manifest → render/select per connected device → play
-  in-memory, no funscript surfaced.
+This works because per-window compute is tiny: rendering a **5-second window costs ~2 ms in
+pure Python (~3000× realtime)**, while a full 93-minute clip is ~2 s — so the look-ahead is
+effectively free and the large-file concern disappears (you only ever compute the buffer).
+The analysis (`.forge` bundle) is precomputed; only the cheap intent→channel step streams.
 
-Chapter-aware rendering (spec §7.5) means the bundle can be produced and played
-chapter-by-chapter, so playback can begin before the whole clip finishes processing.
+Two playback paths (spec §10):
+
+- **External players** → emit the funscript superset → recognized folder → restim/others play
+  (the file-based path, for tools that want whole files).
+- **ForgePlayer (native)** → read the manifest → **stream** intent→channels per connected
+  device from the look-ahead buffer → play in-memory, no funscript surfaced.
+
+Chapter boundaries (spec §7.5) are safe seam points, so streaming can start immediately and
+stitch across chapters as it crosses them. *(Engine contract: a windowed render —
+`render(t0, t1)` per device — is the streaming primitive; `slice_actions` already isolates a
+window, and generation over it is the 2 ms step measured above.)*
 
 ## Interoperability matrix
 
