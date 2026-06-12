@@ -265,14 +265,20 @@ Feel → lift mapping (replaces the old per-chapter "character" table, now deriv
 
 ### 7.4 restim contract (interoperability facts)
 
+Ranges below are **edger's verified `normalization`** (from `config.event_definitions.yml`,
+edger477/funscript-tools) where present — they supersede earlier assumptions. **The engine
+emits *normalized* funscript values (pos 0–100 ⇄ decoded 0–1); these physical ranges are how
+restim maps that normalized value.** So our files are restim-compatible regardless; this table
+is the device-side mapping, not our on-disk encoding.
+
 | Channel | Range (Min–Max) | Meaning |
 |---|---|---|
-| `alpha`, `beta` | 0 – 0.998 | spatial position (unit-disc point) |
-| `volume` | 0 – 0.998 | intensity / amplitude |
-| `frequency` (carrier) | 500 – 1500 Hz | carrier tone |
-| `pulse_frequency` | 1 – 150 Hz | pulse rate |
-| `pulse_width` | 3 – 15 | pulse width |
-| `pulse_rise_time` | 1 – 5 | envelope rise (default-empty) |
+| `alpha`, `beta` | 0 – 0.998 | spatial position (unit-disc point); restim derives the 3-phase electrode signals from this 2-D point |
+| `volume` | 0 – 1.0 (edger); **we cap at ≤ 0.7** | intensity / amplitude. edger sets no ceiling; §9 keeps ours more conservative ("meet or beat") |
+| `frequency` (carrier) | 0 – 1200 Hz | carrier tone (was assumed 500–1500) |
+| `pulse_frequency` | 0 – 120 Hz | pulse rate (was assumed 1–150) |
+| `pulse_width` | 0 – 100 % | pulse width, as a percentage (was assumed 3–15 absolute) |
+| `pulse_rise_time` | 1 – 5 | envelope rise (default-empty; not in edger's normalization — assumption, unconfirmed) |
 
 ### 7.5 Per-chapter generation + seam stitching
 
