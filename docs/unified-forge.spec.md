@@ -333,6 +333,7 @@ E-stim drives current through the body; intensity and waveform bounds are a **sa
 - Global `max_volume` ceiling (default ≤ 0.7) honored by `volume`, `volume-prostate`, `volume-stereostim`.
 - Prefer **smooth ramps** over step jumps; cap per-step volume delta (the `rate` primitive).
 - Ramp rate within the safe envelope (default 15 %/hour, range 0–40).
+- **Carrier-frequency floor (frequencies to avoid).** A carrier that is too *low* is unsafe — per restim's *e-stim-safety* wiki (IEC 60601-2-10 + charge-per-phase): low Hz permits far less current (`50 mA < 400 Hz`, `80 mA < 1500 Hz`), and the minimum safe carrier runs **≈ 446 Hz** (15 cm² glans loop) to **≈ 755 Hz** (9 cm² shaft). The engine **floors the carrier to a safe minimum** (default `MIN_CARRIER_HZ = 500`, raise for small electrodes) so it can never drop toward 0. **Net pulsetrain charge** must stay under the reversible storage limit (~40–50 µC/cm²) — no DC bias — to avoid electrode corrosion. Because restim *also* lets the user select the carrier (with its own electrode-aware safety calc), the automated `frequency` channel is **optional** (`emit_carrier=False` → restim owns the static carrier). This resolves §12 Q#4.
 - **Do not** invent waveform parameters outside documented restim ranges.
 - Each profile owns its device-specific safety limits.
 

@@ -17,7 +17,7 @@ from .feel import derive_feel, ramp_slice
 from .estim import derive_channels, MINIMAL, FULL, RISE_TIME
 from .singleaxis import build_device
 from .chapters import equal_chapters, slice_actions, stitch
-from .safety import encode_pos, rate_limit, channel_ceiling, POS_MAX
+from .safety import encode_pos, rate_limit, channel_ceiling, POS_MAX, apply_carrier_floor
 from .funscript import Funscript, dump_funscript
 
 CHANNELS = MINIMAL   # the minimal playable set (back-compat alias)
@@ -26,8 +26,10 @@ CHANNELS = MINIMAL   # the minimal playable set (back-compat alias)
 _SAFE = {"alpha": 0.5, "beta": 0.5, "alpha-prostate": 0.5, "frequency": 0.5}
 
 
-def _channel_names(full, enable_rise_time):
+def _channel_names(full, enable_rise_time, emit_carrier=True):
     names = list(FULL if full else MINIMAL)
+    if not emit_carrier and "frequency" in names:
+        names.remove("frequency")   # let restim use its user-selected static carrier (Q#4)
     if full and enable_rise_time:
         names.append(RISE_TIME)
     return names
@@ -37,6 +39,8 @@ def _encode_channel(name, values, t0):
     ceiling = channel_ceiling(name)
     if name.startswith("volume"):
         values = rate_limit(values)   # section 9 smooth-ramp cap on current-bearing channels
+    elif name == "frequency":
+        values = apply_carrier_floor(values)  # section 9: never emit an unsafe low carrier
     acts = [{"at": int(t0 + i * DT_MS), "pos": encode_pos(v, ceiling)}
             for i, v in enumerate(values)]
     return Funscript(actions=acts)
@@ -57,14 +61,19 @@ def _chapter_action_lists(actions, chapters):
 
 
 def generate_estim(actions, ramp=None, name="out", out_dir=None,
-                   chapters=None, full=True, enable_rise_time=False):
+                   chapters=None, full=True, enable_rise_time=False,
+                   emit_carrier=True):
     """Generate the e-stim channel set. `chapters` may be None (one chapter), an int
     (split into N equal chapters), or a list of (start_ms, end_ms) windows.
+
+    `emit_carrier=False` omits the automated `frequency` channel so restim uses its
+    own user-selected static carrier (spec §7.4 Q#4). When emitted, the carrier is
+    floored to the safe minimum (§9).
 
     Returns {channel: Funscript}; writes <out_dir>/estim/<name>.<channel>.funscript
     if out_dir is given.
     """
-    names = _channel_names(full, enable_rise_time)
+    names = _channel_names(full, enable_rise_time, emit_carrier)
     parts = []
     for ca in _chapter_action_lists(actions, chapters):
         sig = analyze(ca)

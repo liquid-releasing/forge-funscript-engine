@@ -169,6 +169,27 @@ class TestChapterSidecar(unittest.TestCase):
         self.assertGreater(len(ch["alpha"].actions), 1)
 
 
+class TestCarrierSafety(unittest.TestCase):
+    """Section 9: the carrier `frequency` is floored to the safe minimum and is
+    omittable (restim can own a user-selected static carrier)."""
+
+    def test_carrier_never_below_safe_floor(self):
+        from forge_funscript_engine.safety import carrier_floor_norm
+        floor = carrier_floor_norm()
+        for name in ("flat", "single-point", "fast-smooth", "irregular"):
+            ch = generate_estim(_actions(name))
+            if "frequency" not in ch:
+                continue
+            for a in ch["frequency"].actions:
+                self.assertGreaterEqual(_dec(a["pos"]), floor - 0.005,
+                                        f"{name}: carrier below safe floor")
+
+    def test_emit_carrier_false_omits_frequency(self):
+        ch = generate_estim(_actions("fast-smooth"), emit_carrier=False)
+        self.assertNotIn("frequency", ch)
+        self.assertIn("volume", ch)   # other channels unaffected
+
+
 class TestSingleAxis(unittest.TestCase):
     def test_handy_position_valid(self):
         ch = generate_single_axis(_actions("fast-smooth"), device="handy")

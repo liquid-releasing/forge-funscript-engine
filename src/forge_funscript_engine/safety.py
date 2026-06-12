@@ -12,6 +12,13 @@ RATE_CAP = 0.05       # max per-step volume delta (smooth-ramp requirement) [cal
 SEAM_MAX_DELTA = 0.05  # max per-step delta allowed across a chapter seam (section 7.5)
 POS_MAX = 1.0         # single-axis position uses the full 0..100 funscript range
 
+# Carrier-frequency safety (restim e-stim-safety wiki: IEC 60601-2-10 + charge-per-phase).
+# A carrier BELOW the safe minimum delivers unsafe charge per phase (thermal/tissue) and
+# draws far less safe current at low Hz. restim's worked examples: >= 446 Hz (15 cm^2 glans
+# loop) .. >= 755 Hz (9 cm^2 shaft). We floor the carrier so it can never drop below this.
+FREQ_MAX_HZ = 1200.0     # carrier normalization max (edger, spec section 7.4)
+MIN_CARRIER_HZ = 500.0   # safe carrier floor; RAISE to ~755 for small electrodes [safety-config]
+
 
 def channel_ceiling(name):
     """Decoded ceiling for a channel: volume family is current-bearing -> MAX_VOLUME;
@@ -40,6 +47,18 @@ def rate_limit(values, cap=RATE_CAP):
         d = max(-cap, min(cap, x - prev))
         out.append(prev + d)
     return out
+
+
+def carrier_floor_norm():
+    """The MIN_CARRIER_HZ floor expressed as a normalized [0,1] funscript value."""
+    return MIN_CARRIER_HZ / FREQ_MAX_HZ
+
+
+def apply_carrier_floor(values):
+    """Clamp normalized carrier-frequency values UP to the safe minimum so the decoded
+    carrier never drops below MIN_CARRIER_HZ (restim e-stim-safety). NaN/Inf -> floor."""
+    floor = carrier_floor_norm()
+    return [max(floor, min(1.0, _finite(v))) for v in values]
 
 
 def encode_pos(value, ceiling=CH_MAX):
