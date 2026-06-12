@@ -1,0 +1,21 @@
+Restim is a real-time e‑stim audio generator designed primarily for three‑phase setups, such as Stereostim boxes, and can also work with other audio‑based stim devices like FOC‑Stim Milovana+1.
+
+Funscript support:
+
+Restim can read and run funscript files created for stroker devices, and it can also be scripted using tools like OpenFunscripter or other funscript editors Milovana.
+
+The software is built around three‑phase funscripts (alpha, beta, gamma), and it does not have a built‑in “Funscript 2D” or “Funscript 3‑phase” creator in the sense of a dedicated GUI for designing 2‑channel or 3‑channel funscripts from scratch Milovana.
+
+If you need to adapt scripts for other devices (e.g., dual‑channel Coyote), Restim itself does not provide a direct conversion tool, and mapping three‑phase funscripts to dual‑channel is not supported due to hardware limitations Milovana.
+
+You can, however, use Restim’s funscript_1d_to_2d.py script (included in the GitHub repo) to convert 1‑D funscripts into 2‑D ones, but this is for specific use cases and not a full‑featured creator Github.
+
+Key points:
+
+Restim’s main funscript handling is for three‑phase audio‑based e‑stim.
+
+It does not offer a general “Funscript 2D” or “Funscript 3‑phase” creator GUI — you’d need to create or convert funscripts externally (e.g., with OpenFunscripter) and then load them into Restim.
+
+For multi‑channel setups, you may need to adapt scripts manually or use other funscript players like Howl or Funstim, which can handle stereo or multi‑funscript playback Milovana+1.
+
+If you want to “create” funscripts for Restim, the best approach is to use a funscript editor (like OpenFunscripter) to design your patterns, then import them into Restim for real‑time playback.

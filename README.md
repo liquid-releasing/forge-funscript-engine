@@ -113,6 +113,7 @@ envelope is applied as the final stage, always (see [spec §9](docs/unified-forg
 | `generate_estim(actions, ramp=None, name="out", out_dir=None, chapters=None, full=True, enable_rise_time=False)` | motion → e-stim `{channel: Funscript}`; writes `<out_dir>/estim/` if `out_dir` given |
 | `generate_single_axis(actions, device="handy", knobs=None, name="out", out_dir=None)` | motion → `{"position": Funscript}` for a stroker; writes `<out_dir>/<device>/` |
 | `load_chapters_file(path, clip_end_ms=None)` / `parse_chapters(doc, …)` | chapter sidecar → `[(start_ms, end_ms), …]` for `generate_estim(chapters=…)` |
+| `load_phrases(path)` / `feel_from_phrase(metrics, base)` | consume the host's `phrases.json` assess output → Feel (bpm→Pace, span→Depth) |
 | `analyze(actions) -> Signals` | §3 motion analysis — the constant-free base signals |
 | `derive_feel(signals, ramp=None) -> Feel` | §3.2 — the 6 Feel dials in `[0,1]` |
 | `load_funscript(path)` / `dump_funscript(fs, path)` | funscript JSON I/O |

@@ -4,7 +4,7 @@
 **Supersedes:** [funscript.spec.md](background/funscript.spec.md) (e-stim generator), [funscriptforge.spec.md](background/funscriptforge.spec.md) (host), and the deferred direction in [unified-haptics-direction.md](background/unified-haptics-direction.md). Those three remain as **background/rationale**; this is the document we build against.
 **Prototype of record:** [`prototype/`](../prototype/) (`Unified Forge.html`, `scripts/forge-engine.js`) — the UI artifact that resolved the unified model. This spec wires that model to motion-derived generation and the real safety envelope.
 
-> **Clean-room stance carries forward unchanged.** edger477's repo is unlicensed (= all rights reserved): read for *facts* only (channel roles, parameter ranges, safety limits), never copy code. Your **liquid-releasing CLI** contribution is yours to reuse. restim's value ranges are an interoperability contract. See [funscript.spec.md §2](background/funscript.spec.md) — that section governs this spec too.
+> **Clean-room / licensing.** **restim (diglet48/restim) is MIT** — we may read *and reuse* its code with attribution; it is the interoperability reference for the e-stim channel contract and the 1D→2D encoding. **edger477's repos are unlicensed** (= all rights reserved): read for *facts* only (channel roles, parameter ranges, safety limits), never copy code; their generated *output* is usable as a calibration reference. **OpenFunscripter's license is unconfirmed** — facts-only until verified; a deeper OFS integration is a deferred roadmap item. Your **liquid-releasing CLI** contribution is yours to reuse. See [funscript.spec.md §2](background/funscript.spec.md).
 
 ---
 
@@ -243,6 +243,8 @@ beta(t)   = 0.5 + 0.5 · radius(t) · sin(θ(t))
 
 - `min_distance` (0.1–0.9): minimum radius for slow motion. ← **Depth** sets the radius range; slow motion → center (diffuse), fast → edge (localized).
 - `θ(t)` chosen by a **lift style**, selected from **Feel** (not hand-picked per chapter unless overridden):
+
+> **restim parity (verified against [diglet48/restim](https://github.com/diglet48/restim) `funscript_1d_to_2d.py`, MIT).** Our **encoding is byte-compatible** with restim — `pos` int 0–100 ⇄ decoded 0–1, `at` in ms, `actions` array, one file per axis — so our `alpha`/`beta` load in restim unchanged. Our **geometry intentionally differs**: restim's converter is *amplitude-driven* (`r = (start−end)/2`, alpha follows the raw position, semicircle per stroke) and is basic + **no longer maintained**; ours is *speed-driven* per edger's documented philosophy and Feel-shaped. We keep ours — it's the richer creator restim lacks — while staying load-compatible.
 
 | Lift style | θ range | Feel that selects it |
 |---|---|---|

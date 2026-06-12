@@ -15,6 +15,7 @@ from .analyze import analyze, Signals
 from .feel import derive_feel, Feel
 from .pipeline import generate_estim, generate_single_axis
 from .chapters import load_chapters_file, parse_chapters
+from .assess import load_phrases, feel_from_phrase
 
 __all__ = [
     "load_funscript", "dump_funscript", "Funscript",
@@ -22,4 +23,5 @@ __all__ = [
     "derive_feel", "Feel",
     "generate_estim", "generate_single_axis",
     "load_chapters_file", "parse_chapters",
+    "load_phrases", "feel_from_phrase",
 ]
