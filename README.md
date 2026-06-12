@@ -42,7 +42,9 @@ forge-funscript-engine input.funscript -o out/ --name myclip
 forge-funscript-engine input.funscript -o out/ --device handy      # -> out/handy/myclip.funscript
 forge-funscript-engine input.funscript -o out/ --device vacuglide  # -> out/vacuglide/myclip.funscript
 
-# chapter-aware generation with seam stitching, or just the minimal a/b/v set
+# chapter-aware generation with seam stitching (real boundaries from a sidecar),
+# or N equal splits, or just the minimal a/b/v set
+forge-funscript-engine input.funscript -o out/ --chapters-file input.chapters.json
 forge-funscript-engine input.funscript -o out/ --chapters 4
 forge-funscript-engine input.funscript -o out/ --channels minimal
 ```
@@ -54,8 +56,23 @@ forge-funscript-engine input.funscript -o out/ --channels minimal
 | `--name` | output basename (default: input filename stem) |
 | `--device` | `estim` (default), `handy`, or `vacuglide` |
 | `--channels` | e-stim set: `full` (default superset) or `minimal` (alpha/beta/volume) |
-| `--chapters` | split into N equal chapters with seam stitching (e-stim) |
+| `--chapters-file` | chapter sidecar JSON (real boundaries); overrides `--chapters` |
+| `--chapters` | split into N equal chapters with seam stitching (testing convenience) |
 | `--ramp` | Passage ramp slice `R` in `[0,1]` (default: derived from clip length) |
+
+### Chapters
+
+Chapters are the **generation unit** (per-chapter Feel, stitched at the seams). The
+engine *consumes* boundaries — creating them (audio/video analysis) is the host's job
+(spec §10). Four ways to supply them, in order of precedence:
+
+1. **Sidecar JSON** — `--chapters-file my.chapters.json`, or `load_chapters_file(path)`.
+   Tolerant of common schemas (top-level array or `{"chapters":[…]}`; times as ms
+   numbers or `HH:MM:SS.mmm`; aliased start/end/duration keys). See
+   [examples/README.md](examples/README.md).
+2. **Explicit tuples** (library) — `generate_estim(actions, chapters=[(start_ms, end_ms), …])`.
+3. **Equal split** — `--chapters N` / `chapters=N` (a testing convenience, not real scenes).
+4. **None** (default) — one chapter spanning the whole clip.
 
 Equivalent: `python -m forge_funscript_engine input.funscript -o out/`.
 
@@ -95,6 +112,7 @@ envelope is applied as the final stage, always (see [spec §9](docs/unified-forg
 |---|---|
 | `generate_estim(actions, ramp=None, name="out", out_dir=None, chapters=None, full=True, enable_rise_time=False)` | motion → e-stim `{channel: Funscript}`; writes `<out_dir>/estim/` if `out_dir` given |
 | `generate_single_axis(actions, device="handy", knobs=None, name="out", out_dir=None)` | motion → `{"position": Funscript}` for a stroker; writes `<out_dir>/<device>/` |
+| `load_chapters_file(path, clip_end_ms=None)` / `parse_chapters(doc, …)` | chapter sidecar → `[(start_ms, end_ms), …]` for `generate_estim(chapters=…)` |
 | `analyze(actions) -> Signals` | §3 motion analysis — the constant-free base signals |
 | `derive_feel(signals, ramp=None) -> Feel` | §3.2 — the 6 Feel dials in `[0,1]` |
 | `load_funscript(path)` / `dump_funscript(fs, path)` | funscript JSON I/O |

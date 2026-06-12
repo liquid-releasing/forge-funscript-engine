@@ -15,6 +15,7 @@ import sys
 
 from .funscript import load_funscript
 from .pipeline import generate_estim, generate_single_axis
+from .chapters import load_chapters_file
 
 PROG = "forge-funscript-engine"
 
@@ -36,6 +37,8 @@ def build_parser():
                    help="e-stim channel set: full superset or minimal a/b/v (default: full)")
     p.add_argument("--chapters", type=int, default=None,
                    help="split into N equal chapters with seam stitching (e-stim only)")
+    p.add_argument("--chapters-file", default=None,
+                   help="standalone chapter sidecar JSON; overrides --chapters (e-stim only)")
     p.add_argument("--ramp", type=float, default=None,
                    help="Passage ramp slice R in [0,1] (default: derived from length)")
     return p
@@ -49,9 +52,18 @@ def main(argv=None):
     name = args.name or os.path.splitext(os.path.basename(args.input))[0]
     fs = load_funscript(args.input)
 
+    chapters = args.chapters
+    if args.chapters_file:
+        if not os.path.isfile(args.chapters_file):
+            print(f"{PROG}: chapters file not found: {args.chapters_file}",
+                  file=sys.stderr)
+            return 2
+        clip_end = fs.actions[-1]["at"] if fs.actions else None
+        chapters = load_chapters_file(args.chapters_file, clip_end)
+
     if args.device == "estim":
         channels = generate_estim(fs.actions, ramp=args.ramp, name=name,
-                                  out_dir=args.out_dir, chapters=args.chapters,
+                                  out_dir=args.out_dir, chapters=chapters,
                                   full=(args.channels == "full"))
         sub = "estim"
         files = [f"{name}.{ch}.funscript" for ch in channels]

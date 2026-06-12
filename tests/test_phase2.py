@@ -22,7 +22,7 @@ from forge_funscript_engine.estim import FULL, MINIMAL, RISE_TIME  # noqa: E402
 from forge_funscript_engine.safety import (                # noqa: E402
     channel_ceiling, SEAM_MAX_DELTA)
 from forge_funscript_engine.chapters import (              # noqa: E402
-    stitch, within_seam_envelope)
+    stitch, within_seam_envelope, parse_chapters, to_ms, load_chapters_file)
 from forge_funscript_engine.singleaxis import norm_knobs   # noqa: E402
 
 FIX = os.path.join(HERE, "fixtures")
@@ -110,6 +110,63 @@ class TestSeamStitching(unittest.TestCase):
         for fs in ch.values():
             for act in fs.actions:
                 self.assertTrue(0 <= act["pos"] <= 100)
+
+
+class TestChapterSidecar(unittest.TestCase):
+    """Section 7.5 chapter input: tolerant sidecar parsing -> (start_ms, end_ms) tuples."""
+
+    def test_to_ms_forms(self):
+        self.assertEqual(to_ms(1500), 1500)             # number = ms (funscript convention)
+        self.assertEqual(to_ms("1500"), 1500)           # bare numeric string = ms too
+        self.assertEqual(to_ms("00:00:01.500"), 1500)   # HH:MM:SS.mmm
+        self.assertEqual(to_ms("01:30"), 90000)         # MM:SS (colon -> H:M:S)
+
+    def test_list_of_ms(self):
+        doc = [{"start": 0, "end": 1000}, {"start": 1000, "end": 2000}]
+        self.assertEqual(parse_chapters(doc), [(0, 1000), (1000, 2000)])
+
+    def test_object_with_timestamps(self):
+        doc = {"chapters": [
+            {"name": "warmup", "startTime": "00:00:00", "endTime": "00:00:03"},
+            {"name": "build", "startTime": "00:00:03", "endTime": "00:00:08.500"},
+        ]}
+        self.assertEqual(parse_chapters(doc), [(0, 3000), (3000, 8500)])
+
+    def test_start_only_fills_from_next_and_clip_end(self):
+        doc = [{"start": 0}, {"start": 5000}]
+        self.assertEqual(parse_chapters(doc, clip_end_ms=9000),
+                         [(0, 5000), (5000, 9000)])
+
+    def test_forge_sidecar_schema(self):
+        # the real .forge / videoflow schema: at_ms / end_ms
+        doc = {"chapters": [
+            {"at_ms": 0, "end_ms": 246201, "name": "", "content_type": "driving"},
+            {"at_ms": 246201, "end_ms": 596480, "name": "", "content_type": "driving"},
+        ], "schema": "audio-structure", "version": "3.0"}
+        self.assertEqual(parse_chapters(doc), [(0, 246201), (246201, 596480)])
+
+    def test_duration_form_and_aliases(self):
+        doc = [{"from": 1000, "duration": 2000}, {"begin": 3000, "to": 4000}]
+        self.assertEqual(parse_chapters(doc), [(1000, 3000), (3000, 4000)])
+
+    def test_skips_entries_without_start(self):
+        doc = [{"name": "no-start"}, {"start": 0, "end": 500}]
+        self.assertEqual(parse_chapters(doc), [(0, 500)])
+
+    def test_load_file_round_trip(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "ch.json")
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump({"chapters": [{"start": 0, "end": 1000}]}, f)
+            self.assertEqual(load_chapters_file(path), [(0, 1000)])
+
+    def test_sidecar_drives_generation(self):
+        chs = parse_chapters([{"start": 0, "end": 3000},
+                              {"start": 3000, "end": 6000}],
+                             clip_end_ms=6000)
+        ch = generate_estim(_actions("fast-smooth"), chapters=chs)
+        self.assertEqual(set(ch.keys()), set(FULL))
+        self.assertGreater(len(ch["alpha"].actions), 1)
 
 
 class TestSingleAxis(unittest.TestCase):

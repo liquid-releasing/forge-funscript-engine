@@ -276,6 +276,21 @@ Feel → lift mapping (replaces the old per-chapter "character" table, now deriv
 
 Synthesize channels **per chapter** (using that chapter's Feel + its Passage/ramp slice), then **stitch across seams** — blend channel values at chapter boundaries to avoid audible/physical discontinuities (assert a max per-seam delta). This is what differentiates us from edger's single global pass and makes the result vary scene-to-scene ([funscript.spec.md §6](background/funscript.spec.md)).
 
+### 7.6 Chapter input contract (how boundaries reach the engine)
+
+**The engine consumes chapter boundaries; it does not create them.** Chapter *creation* (audio/video analysis → 3–5 min chunks) is the host's `[chapterize]` stage (§10); the host owns steps that produce `[{start, end}, …]`, and this engine owns generation. So boundaries are **supplied**, via any of four forms (precedence high → low):
+
+| Form | How | Use |
+|---|---|---|
+| **Sidecar JSON** | `--chapters-file <file>` / `load_chapters_file(path)` → `[(start_ms, end_ms), …]` | real scenes from the host / a tool |
+| **Explicit tuples** | `generate_estim(actions, chapters=[(start_ms, end_ms), …])` | programmatic embedding (a first-class library option) |
+| **Equal split** | `--chapters N` / `chapters=N` | a **testing convenience** — naive equal-duration windows, not real scenes |
+| **None** | default | single chapter spanning the whole clip (Phase-1 fallback) |
+
+**Sidecar schema (tolerant, so different tools' files fit).** The document is a top-level array **or** an object with a `chapters` array. Each entry needs a **start**; the **end** is taken from `end`/`duration`, else the next chapter's start, else the clip end. Times are a number/numeric-string (= **milliseconds**, the funscript `at` convention) or a colon string (`HH:MM:SS.mmm` / `MM:SS`). Accepted key aliases — start: `start`/`startTime`/`start_ms`/`from`/`begin`/`at`/`time`; end: `end`/`endTime`/`end_ms`/`to`/`finish`/`stop`; duration: `duration`/`dur`/`length`; name (optional): `name`/`title`/`label`. Entries without a start are skipped. If a real file doesn't parse, the parser is widened rather than the file reshaped.
+
+> This keeps the **host-owns-chaptering** boundary from [funscript.spec.md §11](background/funscript.spec.md) intact while making the engine usable standalone by anyone with a chapter sidecar.
+
 ---
 
 ## 8. Single-axis profiles (Handy, Vacuglide)

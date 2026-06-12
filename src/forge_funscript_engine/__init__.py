@@ -14,10 +14,12 @@ from .funscript import load_funscript, dump_funscript, Funscript
 from .analyze import analyze, Signals
 from .feel import derive_feel, Feel
 from .pipeline import generate_estim, generate_single_axis
+from .chapters import load_chapters_file, parse_chapters
 
 __all__ = [
     "load_funscript", "dump_funscript", "Funscript",
     "analyze", "Signals",
     "derive_feel", "Feel",
     "generate_estim", "generate_single_axis",
+    "load_chapters_file", "parse_chapters",
 ]

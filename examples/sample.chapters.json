@@ -1,0 +1,8 @@
+{
+  "chapters": [
+    { "name": "warmup",   "startTime": "00:00:00",     "endTime": "00:03:30" },
+    { "name": "build",    "startTime": "00:03:30",     "endTime": "00:07:00" },
+    { "name": "peak",     "startTime": "00:07:00",     "endTime": "00:10:15" },
+    { "name": "cooldown", "startTime": "00:10:15.000", "endTime": "00:12:00" }
+  ]
+}

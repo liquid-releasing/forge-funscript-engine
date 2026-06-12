@@ -23,6 +23,23 @@ MOMENTS  ->  punctual influences     -- local touch-ups layered on top
 POLISH   ->  the per-device forge     -- conditions the one signal into N device files
 ```
 
+## Pipeline
+
+```mermaid
+flowchart LR
+    IN[input.funscript<br/>1-D stroke] --> AN[analyze<br/>§3 base signals]
+    CH[chapters<br/>sidecar / tuples] -.-> AN
+    AN --> FE[derive Feel<br/>6 dials, §3.2]
+    FE --> POL{POLISH<br/>device}
+    POL -->|e-stim| ES[alpha/beta/volume<br/>+ superset, §7]
+    POL -->|Handy| HA[position, §8]
+    POL -->|Vacuglide| VG[position, §8]
+    ES --> SAFE[safety clamp<br/>§9]
+    HA --> SAFE
+    VG --> SAFE
+    SAFE --> OUT[funscript channels]
+```
+
 ## Install
 
 ```bash
@@ -35,8 +52,15 @@ pip install -e ".[docs]"               # to build this site
 
 ```bash
 forge-funscript-engine input.funscript -o out/ --name myclip
-# -> out/estim/myclip.{alpha,beta,volume}.funscript
+# -> out/estim/myclip.<channel>.funscript  (full superset)
+
+forge-funscript-engine input.funscript -o out/ --device handy        # single-axis stroker
+forge-funscript-engine input.funscript -o out/ --chapters-file ch.json  # real chapters + seams
 ```
+
+Chapters are *supplied*, not invented (creation is the host's job, [spec §10](unified-forge.spec.md)):
+a sidecar JSON (`--chapters-file`), explicit `(start_ms, end_ms)` tuples in the library,
+`--chapters N` equal splits, or none (one chapter). See the [build spec §7.6](unified-forge.spec.md).
 
 ## Library
 

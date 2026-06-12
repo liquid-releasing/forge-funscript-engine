@@ -2,5 +2,9 @@ __pycache__/
 *.pyc
 build/
 dist/
+# example sample data (real clips/funscripts/videos) stays local, not in the repo;
+# only examples/README.md and examples/sample.chapters.json are tracked
+examples/*/
+examples/out/
 *.egg-info/
 .venv/
