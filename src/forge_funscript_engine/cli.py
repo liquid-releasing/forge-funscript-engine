@@ -16,6 +16,7 @@ import sys
 from .funscript import load_funscript
 from .pipeline import generate_estim, generate_single_axis
 from .chapters import load_chapters_file
+from .bundle import load_bundle
 
 PROG = "forge-funscript-engine"
 
@@ -25,7 +26,13 @@ def build_parser():
         prog=PROG,
         description="Forge Funscript Engine: stroke funscript -> device channels.",
     )
-    p.add_argument("input", help="input .funscript (1-D stroke motion)")
+    p.add_argument("input", nargs="?", default=None,
+                   help="input .funscript (1-D stroke motion); omit when using --bundle")
+    p.add_argument("--bundle", default=None,
+                   help="a .forge bundle: manifest.ffmeta path or its directory "
+                        "(supplies motion + chapters + name)")
+    p.add_argument("--no-carrier", action="store_true",
+                   help="omit the automated frequency channel (restim uses its static carrier)")
     p.add_argument("-o", "--out-dir", default=".",
                    help="output directory (default: .)")
     p.add_argument("--name", default=None,
@@ -46,29 +53,42 @@ def build_parser():
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
-    if not os.path.isfile(args.input):
-        print(f"{PROG}: input not found: {args.input}", file=sys.stderr)
-        return 2
-    name = args.name or os.path.splitext(os.path.basename(args.input))[0]
-    fs = load_funscript(args.input)
 
-    chapters = args.chapters
-    if args.chapters_file:
-        if not os.path.isfile(args.chapters_file):
-            print(f"{PROG}: chapters file not found: {args.chapters_file}",
-                  file=sys.stderr)
+    # Resolve motion + chapters + name from either a .forge bundle or a loose funscript.
+    if args.bundle:
+        if not os.path.exists(args.bundle):
+            print(f"{PROG}: bundle not found: {args.bundle}", file=sys.stderr)
             return 2
-        clip_end = fs.actions[-1]["at"] if fs.actions else None
-        chapters = load_chapters_file(args.chapters_file, clip_end)
+        b = load_bundle(args.bundle)
+        actions, chapters = b.motion_actions, b.chapters
+        name = args.name or b.stem
+    elif args.input:
+        if not os.path.isfile(args.input):
+            print(f"{PROG}: input not found: {args.input}", file=sys.stderr)
+            return 2
+        actions = load_funscript(args.input).actions
+        name = args.name or os.path.splitext(os.path.basename(args.input))[0]
+        chapters = args.chapters
+        if args.chapters_file:
+            if not os.path.isfile(args.chapters_file):
+                print(f"{PROG}: chapters file not found: {args.chapters_file}",
+                      file=sys.stderr)
+                return 2
+            clip_end = actions[-1]["at"] if actions else None
+            chapters = load_chapters_file(args.chapters_file, clip_end)
+    else:
+        print(f"{PROG}: provide an input .funscript or --bundle", file=sys.stderr)
+        return 2
 
     if args.device == "estim":
-        channels = generate_estim(fs.actions, ramp=args.ramp, name=name,
+        channels = generate_estim(actions, ramp=args.ramp, name=name,
                                   out_dir=args.out_dir, chapters=chapters,
-                                  full=(args.channels == "full"))
+                                  full=(args.channels == "full"),
+                                  emit_carrier=not args.no_carrier)
         sub = "estim"
         files = [f"{name}.{ch}.funscript" for ch in channels]
     else:
-        generate_single_axis(fs.actions, device=args.device, name=name,
+        generate_single_axis(actions, device=args.device, name=name,
                              out_dir=args.out_dir)
         channels = {"position": None}
         sub = args.device
@@ -76,7 +96,7 @@ def main(argv=None):
 
     n_frames = "-" if args.device != "estim" else \
         len(next(iter(channels.values())).actions)
-    print(f"{PROG}: {len(fs.actions)} input actions -> {args.device}: "
+    print(f"{PROG}: {len(actions)} input actions -> {args.device}: "
           f"{len(files)} file(s)" + (f" ({n_frames} frames each)" if args.device == "estim" else ""))
     for f in files:
         print(f"  {os.path.join(args.out_dir, sub, f)}")

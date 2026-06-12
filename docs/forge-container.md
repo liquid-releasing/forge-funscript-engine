@@ -41,11 +41,19 @@ flowchart LR
 |---|---|---|
 | **Analyze** | FunscriptForge / videoflow | video ±funscript → motion + chapters/phrases/beats/audio (the `.forge` bundle). Video analysis lives here, **not** in this engine. |
 | **Render** | **this engine** | bundle → 6-dial Feel → device-agnostic intent → per-device channels, safety-clamped. Built today. |
-| **Play** | ForgePlayer | open the container, stream the rendered channels synced to the connected device set, near-real-time. |
+| **Play** | ForgePlayer (orchestrator) + **restim** (e-stim engine) | open the container, sync to video, route each stream to its device. For e-stim, hand the restim-compatible funscripts to **restim** — ForgePlayer does **not** rebuild the signal engine. |
 
 "With or without a funscript": if a stroke funscript exists it is the motion source; if not,
 the analyze stage derives `motion.funscript` from the video. Either way the engine sees one
 motion track + analysis and renders from it.
+
+**Reuse restim for e-stim playback; don't rebuild it.** The real-time three-phase
+audio/electrical signal synthesis — carriers, pulse shaping, the electrical-engineering and
+safety subtleties — is restim's job, and restim is **MIT** (reusable with attribution). So
+ForgePlayer *embeds/uses restim* for e-stim and we emit **restim-compatible funscripts**
+(byte-compatible encoding, verified — spec §7.2/§7.4). We own generation, intent, the
+container, and orchestration; we do not reimplement the signal generator. (Our §9 safety
+clamps are belt-and-suspenders over restim's own electrode-aware safety calc.)
 
 ## The container (`.forge` = a zip, like `.docx`)
 
