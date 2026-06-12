@@ -1,0 +1,30 @@
+site_name: Unified Forge Engine
+site_description: Stroke funscript -> e-stim device channels via one device-agnostic intent model.
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - content.code.copy
+    - toc.integrate
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: amber
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Build spec: unified-forge.spec.md
+  - Background:
+      - E-stim generator: background/funscript.spec.md
+      - Host (FunscriptForge): background/funscriptforge.spec.md
+      - Unified haptics direction: background/unified-haptics-direction.md

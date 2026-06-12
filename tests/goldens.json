@@ -1,0 +1,193 @@
+{
+  "_comment": "Constant-free reference signals per spec \u00a73. Dial VALUES depend on calibration constants; assert the relational invariants, not absolutes.",
+  "dt_ms": 20.0,
+  "p_min": 0.05,
+  "fixtures": {
+    "slow-smooth": {
+      "n_actions": 13,
+      "signals": {
+        "n_samples": 601,
+        "T_s": 12.0,
+        "f_hz": 0.5,
+        "depth": 1.0,
+        "cv_d": 0.0,
+        "cv_a": 0.0,
+        "crest": 1.0,
+        "v_rms": 1.0,
+        "autocorr": 0.8342
+      }
+    },
+    "fast-smooth": {
+      "n_actions": 36,
+      "signals": {
+        "n_samples": 293,
+        "T_s": 5.845,
+        "f_hz": 2.994,
+        "depth": 1.0,
+        "cv_d": 0.0,
+        "cv_a": 0.0,
+        "crest": 1.0418,
+        "v_rms": 5.7479,
+        "autocorr": 0.9331
+      }
+    },
+    "shallow-fast": {
+      "n_actions": 36,
+      "signals": {
+        "n_samples": 293,
+        "T_s": 5.845,
+        "f_hz": 2.994,
+        "depth": 0.2,
+        "cv_d": 0.0,
+        "cv_a": 0.0,
+        "crest": 1.0418,
+        "v_rms": 1.1496,
+        "autocorr": 0.9331
+      }
+    },
+    "sharp-snap": {
+      "n_actions": 32,
+      "signals": {
+        "n_samples": 351,
+        "T_s": 7.0,
+        "f_hz": 1.0714,
+        "depth": 1.0,
+        "cv_d": 0.0,
+        "cv_a": 0.0,
+        "crest": 3.4157,
+        "v_rms": 7.3193,
+        "autocorr": 0.6726
+      }
+    },
+    "irregular": {
+      "n_actions": 16,
+      "signals": {
+        "n_samples": 196,
+        "T_s": 3.9,
+        "f_hz": 1.7949,
+        "depth": 0.65,
+        "cv_d": 0.5763,
+        "cv_a": 0.2329,
+        "crest": 2.596,
+        "v_rms": 3.0267,
+        "autocorr": -0.1023
+      }
+    },
+    "build-ramp": {
+      "n_actions": 33,
+      "signals": {
+        "n_samples": 401,
+        "T_s": 8.0,
+        "f_hz": 2.0,
+        "depth": 0.57,
+        "cv_d": 0.0,
+        "cv_a": 0.4737,
+        "crest": 1.609,
+        "v_rms": 2.3865,
+        "autocorr": 0.9147
+      }
+    },
+    "empty": {
+      "n_actions": 0,
+      "signals": {
+        "n_samples": 0,
+        "T_s": 0.0,
+        "f_hz": 0.0,
+        "depth": 0.0,
+        "cv_d": 0.0,
+        "cv_a": 0.0,
+        "crest": 0.0,
+        "v_rms": 0.0,
+        "autocorr": 0.0
+      }
+    },
+    "single-point": {
+      "n_actions": 1,
+      "signals": {
+        "n_samples": 0,
+        "T_s": 0.0,
+        "f_hz": 0.0,
+        "depth": 0.0,
+        "cv_d": 0.0,
+        "cv_a": 0.0,
+        "crest": 0.0,
+        "v_rms": 0.0,
+        "autocorr": 0.0
+      }
+    },
+    "flat": {
+      "n_actions": 2,
+      "signals": {
+        "n_samples": 251,
+        "T_s": 5.0,
+        "f_hz": 0.0,
+        "depth": 0.0,
+        "cv_d": 0.0,
+        "cv_a": 0.0,
+        "crest": 0.0,
+        "v_rms": 0.0,
+        "autocorr": 0.0
+      }
+    },
+    "huge-gap": {
+      "n_actions": 2,
+      "signals": {
+        "n_samples": 180001,
+        "T_s": 3600.0,
+        "f_hz": 0.0,
+        "depth": 1.0,
+        "cv_d": 0.0,
+        "cv_a": 0.0,
+        "crest": 1.0,
+        "v_rms": 0.0003,
+        "autocorr": 0.0
+      }
+    },
+    "monotonic": {
+      "n_actions": 6,
+      "signals": {
+        "n_samples": 251,
+        "T_s": 5.0,
+        "f_hz": 0.1,
+        "depth": 1.0,
+        "cv_d": 0.0,
+        "cv_a": 0.0,
+        "crest": 1.0,
+        "v_rms": 0.2,
+        "autocorr": 0.0
+      }
+    },
+    "max-speed": {
+      "n_actions": 60,
+      "signals": {
+        "n_samples": 3,
+        "T_s": 0.059,
+        "f_hz": 500.0,
+        "depth": 1.0,
+        "cv_d": 0.0,
+        "cv_a": 0.0,
+        "crest": 0.0,
+        "v_rms": 0.0,
+        "autocorr": 0.0
+      }
+    }
+  },
+  "invariants": [
+    "f_hz(fast-smooth)        >  f_hz(slow-smooth)        # Pace",
+    "depth(fast-smooth)       >  depth(shallow-fast)      # Depth",
+    "crest(sharp-snap)        >  crest(slow-smooth)       # Sharpness",
+    "cv_a(irregular)          >  cv_a(slow-smooth)        # Wildness (amplitude)",
+    "cv_d(irregular)          >  cv_d(slow-smooth)        # Wildness (timing)",
+    "autocorr(slow-smooth)    >  autocorr(irregular)      # Focus",
+    "v_rms(fast-smooth)       >  v_rms(slow-smooth)       # Intensity (motion energy)"
+  ],
+  "invariants_hold_in_reference": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ]
+}
