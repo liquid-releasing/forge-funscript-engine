@@ -1,6 +1,6 @@
 [project]
 name = "forge-funscript-engine"
-version = "0.1.0"
+version = "0.2.0"
 description = "Motion funscript -> one device-agnostic intent signal -> N device files (Phase 1: e-stim alpha/beta/volume)."
 requires-python = ">=3.10"
 dependencies = []  # stdlib only, by design (see docs/unified-forge.spec.md)

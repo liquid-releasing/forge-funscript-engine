@@ -10,11 +10,14 @@ device-agnostic **Feel** dials from the motion, then *forges* that one signal in
 channel set a device actually needs. Device-specificity lives in one place; everything above
 it is one honest signal.
 
-> **Status:** Phase 2 — the full e-stim channel set (alpha/beta/volume + variants,
-> frequency, pulse_*), Wildness-driven lift styles, chapter-aware generation with seam
-> stitching, and the single-axis strokers (Handy/Vacuglide), all under the safety envelope.
-> The adjustment UI and Moments authoring are Phase 3. See
-> [docs/unified-forge.spec.md](docs/unified-forge.spec.md).
+> **Status: v0.2.0 — read/render core complete.** Point at a loose funscript *or* a full
+> `.forge` bundle and get safe, restim-compatible device output: the full e-stim channel set
+> (alpha/beta/volume + variants, frequency, pulse_*), Wildness-driven lift styles, chapter-aware
+> generation with seam stitching, single-axis strokers (Handy/Vacuglide), the carrier-safety
+> floor, and the manifest bundle loader. 44 tests, zero runtime dependencies. Next: the Feel
+> sidecar (write side) and Moments authoring. See [CHANGELOG.md](CHANGELOG.md),
+> [docs/unified-forge.spec.md](docs/unified-forge.spec.md), and the
+> [container & player architecture](docs/forge-container.md).
 
 ## Install
 

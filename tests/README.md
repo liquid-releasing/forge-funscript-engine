@@ -75,4 +75,22 @@ mean(|alpha−0.5|, |beta−0.5|)  for fast-smooth  >  for slow-smooth
 
 ## Status
 
-The reference analyzer + fixtures + goldens are **runnable now**. Assertion sets **A, B** can run against the reference today (`make_fixtures.py` prints the invariant check). **C, D** activate once the Phase-1 generator exists — they assert against its `alpha/beta/volume` output. Wire `make_fixtures.py`'s `analyze()` as the reference oracle in the chosen repo's test runner.
+The reference analyzer + fixtures + goldens are **runnable now**. Assertion sets **A, B** run against the reference (`make_fixtures.py` prints the invariant check); **C, D** assert against the production `alpha/beta/volume` output. The production `analyze()` ([src/forge_funscript_engine/analyze.py](../src/forge_funscript_engine/analyze.py)) reproduces `goldens.json` within tolerance.
+
+## Full suite (v0.2.0 — 44 tests)
+
+Run everything (pure stdlib, no install needed):
+
+```bash
+python -m unittest discover -s tests -p "test_*.py" -b
+```
+
+| File | Covers |
+|---|---|
+| `test_phase1.py` | sets A–D — analyzer signals vs goldens, relational invariants, output validity, disc-path sanity |
+| `test_phase2.py` | full e-stim channel set, lift styles, seam stitching, single-axis profiles, chapter sidecar parsing, **carrier-frequency safety floor** |
+| `test_assess.py` | host `phrases.json` → Feel overlay (bpm→Pace, span→Depth) |
+| `test_bundle.py` | `manifest.ffmeta` `.forge` bundle loader → motion + chapters → generation |
+| `test_cli.py` | CLI end-to-end (channel files, default naming, error paths) |
+
+Tests are `unittest.TestCase`, so `pytest` collects them too if you prefer it.
