@@ -27,6 +27,7 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Container & player architecture: forge-container.md
   - Build spec: unified-forge.spec.md
   - Background:
       - E-stim generator: background/funscript.spec.md
